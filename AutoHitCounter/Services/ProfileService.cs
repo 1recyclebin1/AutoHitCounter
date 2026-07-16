@@ -6,6 +6,7 @@ using System.IO;
 using System.Text.Json;
 using AutoHitCounter.Interfaces;
 using AutoHitCounter.Models;
+using AutoHitCounter.Utilities;
 
 namespace AutoHitCounter.Services;
 
@@ -48,14 +49,14 @@ public class ProfileService : IProfileService
         else
             list.Add(profile);
 
-        WriteUserProfiles();
+        TryWriteUserProfiles();
     }
 
     public void DeleteProfile(string gameName, string profileName)
     {
         if (!_profiles.TryGetValue(gameName, out var list)) return;
         list.RemoveAll(p => p.Name == profileName);
-        WriteUserProfiles();
+        TryWriteUserProfiles();
     }
 
     public void RenameGame(string oldGameName, string newGameName)
@@ -67,14 +68,14 @@ public class ProfileService : IProfileService
             profile.GameName = newGameName;
         _profiles[newGameName] = list;
 
-        WriteUserProfiles();
+        TryWriteUserProfiles();
     }
 
     private Dictionary<string, List<Profile>> LoadMergedProfiles()
     {
         var defaults = LoadFromDisk(DefaultProfilesPath);
         var user = LoadFromDisk(UserProfilesPath);
-        
+
         var merged = new Dictionary<string, List<Profile>>();
 
         foreach (var kvp in defaults)
@@ -119,13 +120,47 @@ public class ProfileService : IProfileService
         }
     }
 
-    private void WriteUserProfiles()
-    {
-        var dir = Path.GetDirectoryName(UserProfilesPath)!;
-        if (!Directory.Exists(dir))
-            Directory.CreateDirectory(dir);
+    private readonly object _profileWriteLock = new();
 
-        var json = JsonSerializer.Serialize(_profiles, new JsonSerializerOptions { WriteIndented = true });
-        File.WriteAllText(UserProfilesPath, json);
+    private void TryWriteUserProfiles()
+    {
+        lock (_profileWriteLock)
+        {
+            var tempPath = UserProfilesPath + ".tmp";
+
+            try
+            {
+                var dir = Path.GetDirectoryName(UserProfilesPath);
+
+                if (string.IsNullOrEmpty(dir))
+                    throw new InvalidOperationException("Invalid user profiles path.");
+
+                Directory.CreateDirectory(dir);
+
+                var json = JsonSerializer.Serialize(
+                    _profiles,
+                    new JsonSerializerOptions { WriteIndented = true });
+
+                File.WriteAllText(tempPath, json);
+
+                if (File.Exists(UserProfilesPath))
+                    File.Replace(tempPath, UserProfilesPath, UserProfilesPath + ".bak");
+                else
+                    File.Move(tempPath, UserProfilesPath);
+            }
+
+            catch (IOException ex)
+            {
+                Logger.Error(ex, $"Failed to write profiles to '{UserProfilesPath}'.");
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                Logger.Error(ex, $"Access denied writing profiles to '{UserProfilesPath}'.");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, $"Unexpected error writing profiles to '{UserProfilesPath}'.");
+            }
+        }
     }
 }

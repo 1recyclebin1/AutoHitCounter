@@ -242,6 +242,7 @@
     <Compile Include="Utilities\AsmLoader.cs" />
     <Compile Include="Utilities\EventLoader.cs" />
     <Compile Include="Utilities\ExternalIntegration.cs" />
+    <Compile Include="Utilities\Logger.cs" />
     <Compile Include="Utilities\MsgBox.cs" />
     <Compile Include="Utilities\OverlayProfileManager.cs" />
     <Compile Include="Utilities\ProfileMigrator.cs" />

@@ -13,6 +13,7 @@ public class ProfileService : IProfileService
     private readonly Dictionary<string, List<Profile>> _defaultProfiles;
     private readonly Dictionary<string, List<Profile>> _profiles;
     private readonly HashSet<string> _deletedDefaults;
+    
 
     private static readonly string UserProfilesPath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
@@ -68,14 +69,11 @@ public class ProfileService : IProfileService
         if (isDefault)
             _deletedDefaults.Add(TombstoneKey(gameName, profileName));
 
-        if (list.Count == 0)
-        {
-            if (hasDefaults)
+        if (list.Count == 0 && hasDefaults)
             {
                 _deletedDefaults.RemoveWhere(k => k.StartsWith(gameName + "|", StringComparison.Ordinal));
-                _profiles[gameName] = new List<Profile>(defaults);
+                _profiles[gameName] = defaults.ConvertAll(CloneProfile);
             }
-        }
         SaveDeletedDefaults(_deletedDefaults);
         TryWriteUserProfiles();
     }
@@ -94,6 +92,12 @@ public class ProfileService : IProfileService
     
     private static string TombstoneKey(string gameName, string profileName) => $"{gameName}|{profileName}";
 
+    private static Profile CloneProfile(Profile source)
+    {
+        var json = JsonSerializer.Serialize(source);
+        return JsonSerializer.Deserialize<Profile>(json);
+    }
+
     private Dictionary<string, List<Profile>> LoadMergedProfiles()
     {
         var user = LoadFromDisk(UserProfilesPath);
@@ -104,7 +108,7 @@ public class ProfileService : IProfileService
         {
             var kept = kvp.Value.FindAll(p => !_deletedDefaults.Contains(TombstoneKey(kvp.Key, p.Name)));
             if (kept.Count > 0)
-                merged[kvp.Key] = new List<Profile>(kept);
+                merged[kvp.Key] = kept.ConvertAll(CloneProfile);
         }
 
         foreach (var kvp in user)

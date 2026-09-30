@@ -120,14 +120,6 @@ public class SplitEventEditorViewModel : BaseViewModel
                 "Glintstone Dragon Smarag", "Lichdragon Fortissax", "Ancient Dragon Senessax", "Ghostflame Dragon (Gravesite Plain)", "Ghostflame Dragon (Scadu Altus)",
                 "Ghostflame Dragon (Cerulean Coast)", "Jagged Peak Drake", "Jagged Peak Drake (Duo Encounter)", "Bayle the Dread"] },
         { "ancient dragon man", ["Ancient Dragon-Man",] },
-        
-        // Sekiro
-        { "corrupted monk", ["Fake Monk", "True Monk", "Fake Monk (Gauntlet)", "True Monk (Gauntlet)",] },
-        { "SSI", ["Isshin, the Sword Saint / Isshin, the Sword Saint (Gauntlet) / Inner Isshin",] },
-        { "roberto", ["Armored Warrior",] },
-        { "orin", ["O'Rin of the Water",] },
-        { "hape", ["Headless Ape", "Headless Ape (Gauntlet)",] },
-        { "gape", ["Guardian Ape", "Guardian Ape (Gauntlet)",] },
     };
 
     private void FilterEvents()

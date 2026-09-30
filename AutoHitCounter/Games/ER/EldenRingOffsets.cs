@@ -777,7 +777,7 @@ public static class EldenRingOffsets
             Version2_4_0 or Version2_5_0 => 0x4366D0,
             Version2_6_0 or Version2_6_1 => 0x4366A0,
             Version2_6_2 => 0x436590,
-            Version2_7_0 => 0x436AE0,
+            Version2_7_0 or Version2_7_1 => 0x436AE0,
             _ => 0
         };
 
@@ -850,6 +850,7 @@ public static class EldenRingOffsets
         PrintOffset("HasStateInfo", Functions.HasStateInfo);
         PrintOffset("IsNoDeathEnabled", Functions.IsNoDeathEnabled);
         PrintOffset("IsTorrent", Functions.IsTorrent);
+        PrintOffset("EnvKillingOriginal", Functions.EnvKillingOriginal);
 
 
         Console.WriteLine("\n--- Patches ---");
